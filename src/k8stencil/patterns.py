@@ -3,6 +3,8 @@ def args_to_list(args, prefix=""):
         key = prefix + key.replace("_", "-")
         if isinstance(value, str):
             yield f"--{key}={value}"
+        elif value is None:
+            yield f"--{key}"
         elif isinstance(value, list):
             for subv in value:
                 yield f"--{key}={subv}"
@@ -28,6 +30,14 @@ def ports_to_container_ports(ports):
     for key, value in ports.items():
         yield dict(
             containerPort=value,
+            name=key,
+        )
+
+def ports_to_service_ports(ports):
+    for key, value in ports.items():
+        yield dict(
+            port=value,
+            targetPort=value,
             name=key,
         )
 
@@ -77,4 +87,9 @@ def get_pod_anti_affinity(pod_affinity_labels, namespace):
             ),
         ),
     )
+
+
+def service_dnssrv(service_name, port_name, port):
+    return f"dnssrv+_{port_name}._tcp.{service_name}.thanos.svc.cluster.local:{port}"
+
 
